@@ -2,9 +2,11 @@ const http = require('http');
 const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
-const config = require('./config');
+const config = require('./lib/config');
 const fs = require('fs');
 const _data = require('./lib/data');
+const handlers = require('./lib/handlers');
+const helpers = require('./lib/helpers');
 
 // TESTING
 // @TODO delete this
@@ -20,10 +22,10 @@ const _data = require('./lib/data');
 // _data.update('test', 'dbfile', {'first_name': 'Semira', 'last_name': 'Makanjuola', 'hobby': 'Feeding', 'age': 1}, function(err) {
 //     console.log('This was the error: ', err);
 // });
-//Read
-_data.delete('test', 'dbfile',function(err) {
-    console.log('This was the error: ', err);
-});
+//Delete
+// _data.delete('test', 'dbfile',function(err) {
+//     console.log('This was the error: ', err);
+// });
 
 //instantiating http server
 const httpServer = http.createServer((req, res) => {
@@ -75,12 +77,12 @@ const unifiedServer = (req, res) => {
         const routeToHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
 
         const data = {
-            'trimmedPath': trimmedPath,
+            'trimmedPath' : trimmedPath,
             'queryString' : queryString,
-            'method': method,
-            'headers': headers,
-            'payload': buffer
-        }
+            'method' : method,
+            'headers' : headers,
+            'payload' : helpers.parseJsonToObject(buffer)
+          };
 
         routeToHandler(data, function(statusCode, payload) {
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
@@ -100,20 +102,9 @@ const unifiedServer = (req, res) => {
     });
 }
 
-
-
-
-
-const handlers = {};
-
-handlers.ping = function(data, callback) {
-    callback(200);
-}
-
-handlers.notFound = function(data, callback) {
-    callback(404);
-}
-//Define a request router
-const router = {
-    'ping': handlers.ping
-}
+// Define the request router
+var router = {
+    'ping' : handlers.ping,
+    'users' : handlers.users,
+    'tokens': handlers.tokens
+  };
