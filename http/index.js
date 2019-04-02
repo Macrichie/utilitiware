@@ -27,6 +27,12 @@ const helpers = require('./lib/helpers');
 //     console.log('This was the error: ', err);
 // });
 
+// @TODO Get rid of this
+// helpers.sendTwilioSms('1234567890','Hello World!',function(err) {
+//     console.log('This was the error: ',err);
+// });
+
+
 //instantiating http server
 const httpServer = http.createServer((req, res) => {
     unifiedServer(req, res);
