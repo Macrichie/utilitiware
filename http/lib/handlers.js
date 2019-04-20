@@ -166,6 +166,7 @@ handlers._users.put = function(data, callback) {
 }
 // Users - Delete
 // Required data: phone
+// @TODO:
 handlers._users.delete = function(data, callback) {
     const phone = typeof(data.queryString.phone) == 'string' && data.queryString.phone.trim().length == 10 ? data.queryString.phone.trim() : false;
     if(phone) {
@@ -173,6 +174,7 @@ handlers._users.delete = function(data, callback) {
 
       handlers._tokens.verifyToken(token, phone, function(tokenIsValid) {
         if(tokenIsValid) {
+          //Lookup the user
           _data.read('users', phone, function(err, userData) {
             if(!err && userData) {
                 _data.delete('users', phone, function(err) {
@@ -181,9 +183,9 @@ handlers._users.delete = function(data, callback) {
                       const userChecks = typeof(userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
                       const checksToDelete = userChecks.length;
                       if(checksToDelete > 0) {
-                        const checksDeleted = 0;
-                        const deletionErrors = false;
-                        //Check through the checks
+                        let checksDeleted = 0;
+                        let deletionErrors = false;
+                        //Loop through the checks
                         userChecks.forEach(function(checkId) {
                           // delete the checks
                           _data.delete('checks', checkId, function(err) {
@@ -198,7 +200,7 @@ handlers._users.delete = function(data, callback) {
                                 callback(500, {"Error": "Errors encountered while attempting to delete all of the user\'s checks. All checks may not have been deleted from the system successfully"})
                               }
                             }
-                          })
+                          });
                         });
                       } else {
                         callback(200);
@@ -388,15 +390,15 @@ handlers._checks.post = function(data, callback) {
     _data.read('tokens', token, function(err, tokenData) {
       if(!err && tokenData) {
         const userPhone = tokenData.phone;
-
+        // lookup user data
         _data.read('users', userPhone, function(err, userData) {
           if(!err && userData) {
             const userChecks = typeof(userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
-
+            //verify that user has less than the number the max-checks-per-user
             if(userChecks.length < config.maxChecks) {
               // create random id for the check
               const checkId = helpers.createRandomString(20);
-
+              // create the check object, and include the user's phone
               const checkObject = {
                 'id': checkId,
                 'userPhone':userPhone,
@@ -405,10 +407,11 @@ handlers._checks.post = function(data, callback) {
                 'method':method,
                 'successCodes':successCodes,
                 'timeoutSeconds':timeoutSeconds
-              }
-
+              };
+              //Save the object
               _data.create('checks', checkId, checkObject, function(err) {
                 if(!err) {
+                  //add the check id to the user's object
                   userData.checks = userChecks;
                   userData.checks.push(checkId);
 
@@ -441,23 +444,25 @@ handlers._checks.post = function(data, callback) {
   }
 };
 
+//checks - get
+//Required data: id
+//Optional data: none
 handlers._checks.get = function(data, callback) {
   const id = typeof(data.queryString.id) == 'string' && data.queryString.id.trim().length == 20 ? data.queryString.id.trim() : false;
   if(id) {
-    // Lookup checks
+    // Lookup the checks
     _data.read('checks', id, function(err, checkData) {
       if(!err && checkData) {
-    // Get token from headers
-    const token = typeof(data.headers.token) == 'string' ? data.headers.token : false;
-    // Verify that the given token is valid and belong to the user who created the check
-    handlers._tokens.verifyToken(token,checkData.userPhone,function(tokenIsValid){
-      if(tokenIsValid){
-        callback(200, checkData);
-      } else {
-        callback(403);
-      }
-    });
-
+        // Get token from headers
+        const token = typeof(data.headers.token) == 'string' ? data.headers.token : false;
+        // Verify that the given token is valid and belong to the user who created the check
+        handlers._tokens.verifyToken(token,checkData.userPhone,function(tokenIsValid){
+          if(tokenIsValid){
+            callback(200, checkData);
+          } else {
+            callback(403);
+          }
+        });
       } else {
         callback(404);
       }
@@ -585,7 +590,7 @@ handlers._checks.delete = function(data, callback) {
         });
 
       } else {
-        callback(400, {"Error": "The specified check id doe not exist"})
+        callback(400, {"Error": "The specified check id does not exist"})
       }
     })
   } else {
