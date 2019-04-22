@@ -12,6 +12,8 @@ const StringDecoder = require('string_decoder').StringDecoder;
 const config = require('./config');
 const handlers = require('./handlers');
 const helpers = require('./helpers');
+const util = require('util');
+const debug = util.debuglog('server');
 
 
 // Instantiate the server module object
@@ -76,8 +78,13 @@ server.unifiedServer = (req, res) => {
             res.writeHead(statusCode);
             res.end(payloadString);
 
-            //Log the request
-            console.log('Returning this response: ', statusCode,payloadString);
+            //If the request is 200, print green otherwise print red
+            if(statusCode == 200) {
+                debug('\x1b[32m%s\x1b[0m', method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
+            } else {
+                debug('\x1b[31m%s\x1b[0m', method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
+            }
+            
         });
     });
 }
@@ -94,11 +101,11 @@ server.router = {
 server.init = function() {
     //start http server
     server.httpServer.listen(config.httpPort, () => {
-        console.log(`Server running on port ${config.httpPort} in ${config.envName} mode.`);
+        console.log('\x1b[36m%s\x1b[0m',`Server running on port ${config.httpPort} in ${config.envName} mode.`);
     });
     //start https server
     server.httpsServer.listen(config.httpsPort, () => {
-        console.log(`Server running on port ${config.httpsPort} in ${config.envName} mode.`);
+        console.log('\x1b[35m%s\x1b[0m',`Server running on port ${config.httpsPort} in ${config.envName} mode.`);
     });
 }
 
