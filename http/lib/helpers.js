@@ -3,6 +3,8 @@ const config = require('./config');
 const crypto = require('crypto');
 const https = require('https');
 const queryString = require('querystring');
+const path = require('path');
+const fs = require('fs');
 
 const helpers = {};
 
@@ -102,6 +104,27 @@ helpers.sendTwilioSms = function(phone, msg, callback) {
     callback("Given parameters were missing or invalid.")
   }
 }
+
+// Get the string content of a template
+helpers.getTemplate = function(templateName, callback) {
+  templateName = typeof(templateName) == 'string' && templateName.length > 0 ? templateName : false;
+
+  if(templateName) {
+    let templateDir = path.join(__dirname,'/../templates/');
+    fs.readFile(templateDir+templateName+'.html','utf8', function(err, str) {
+      if(!err && str) {
+        callback(false, str);
+      } else {
+        callback('No template could be found');
+      }
+    })
+  } else {
+    callback('A valid template name not specified');
+  }
+};
+
+
+
 
 
   // Export the module

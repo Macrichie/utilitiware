@@ -65,16 +65,26 @@ server.unifiedServer = (req, res) => {
             'headers' : headers,
             'payload' : helpers.parseJsonToObject(buffer)
           };
-
-        routeToHandler(data, function(statusCode, payload) {
+        // Route the request to the handler specified in the router
+        routeToHandler(data, function(statusCode, payload, contentType) {
+            // Determine the type of response (fallback to json)
+            contentType = typeof(contentType) == 'string' ? contentType : 'json';
+            // Use the status code called back by the handler, or default to 200
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
 
-            payload = typeof(payload) == 'object' ? payload : {};
+            //Return the response-part that are content-specific
+            let payloadString = '';
 
-            const payloadString = JSON.stringify(payload);
-
-            //Send response
-            res.setHeader('Content-Type', 'application/json');
+            if(contentType == 'json') {
+                res.setHeader('Content-Type', 'application/json');
+                payload = typeof(payload) == 'object' ? payload : {};
+                payloadString = JSON.stringify(payload);
+            }
+            if(contentType == 'html') {
+                res.setHeader('Content-Type', 'text/html');
+                payloadString = typeof(payload) == 'string' ? payload : '';
+            }
+            //Return the response-part that are common to all content-Types
             res.writeHead(statusCode);
             res.end(payloadString);
 
@@ -91,10 +101,19 @@ server.unifiedServer = (req, res) => {
 
 // Define the request router
 server.router = {
+    '' : handlers.index,
+    'account/create' : handlers.accountCreate,
+    'account/edit' : handlers.accountEdit,
+    'account/deleted' : handlers.accountDeleted,
+    'session/create' : handlers.sessionCreate,
+    'session/deleted' : handlers.sessionDeleted,
+    'checks/all' : handlers.checksList,
+    'checks/create' : handlers.checksCreate,
+    'checks/edit' : handlers.checksEdit,
     'ping' : handlers.ping,
-    'users' : handlers.users,
-    'tokens': handlers.tokens,
-    'checks': handlers.checks
+    'api/users' : handlers.users,
+    'api/tokens': handlers.tokens,
+    'api/checks': handlers.checks
   };
 
 // Init script
