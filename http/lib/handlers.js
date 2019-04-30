@@ -21,7 +21,7 @@ handlers.index = function(data, callback) {
   // Reject any request that isn't a GET
   if(data.method == 'get') {
     // Prepare data for interpolation
-    var templateData = {
+    const templateData = {
       'head.title' : 'This is the title',
       'head.description' : 'This is the meta description',
       'body.title' : 'Hello templated world!',
@@ -39,13 +39,66 @@ handlers.index = function(data, callback) {
             callback(500,undefined,'html');
           }
         });
-        //callback(200, str, 'html');
       } else {
         callback(500, undefined,'html');
       }
     });
   } else {
     callback(405, undefined, 'html');
+  }
+};
+
+// Favicon
+handlers.favicon = function(data, callback) {
+  //Reject any request that isn't Get
+  if(data.method == 'get') {
+    //Read in the favicon data
+    helpers.getStaticAsset('favicon.ico', function(err, data) {
+      if(!err && data) {
+        // Callback the data
+        callback(200, data, 'favicon');
+      } else {
+        callback(500)
+      }
+    });
+  } else {
+    callback(405);
+  }
+};
+
+// Public Assets
+handlers.public = function(data, callback) {
+  //Reject any request that isn't Get
+  if(data.method == 'get') {
+    //Read in the favicon data
+    const trimmedAssetName = data.trimmedPath.replace('public/', '').trim();
+    if(trimmedAssetName.length > 0) {
+      //Read in the asset's data
+      helpers.getStaticAsset(trimmedAssetName, function(err, data) {
+        if(!err && data) {
+          // Determine the content type (default to plain text)
+          let contentType = 'plain';
+          if(trimmedAssetName.indexOf('.css') > -1) {
+            contentType = 'css';
+          }
+          if(trimmedAssetName.indexOf('.png') > -1) {
+            contentType = 'png';
+          }
+          if(trimmedAssetName.indexOf('.jpg') > -1) {
+            contentType = 'jpg';
+          }
+          if(trimmedAssetName.indexOf('.ico') > -1) {
+            contentType = 'favicon';
+          }
+          // Callback the data
+          callback(200,data,contentType);
+        } else {
+          callback(404);
+        }
+      });
+    }
+  } else {
+    callback(405);
   }
 };
 
