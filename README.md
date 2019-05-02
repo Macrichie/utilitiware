@@ -1,7 +1,7 @@
-# Utilityware - v1
+# Utilitiware - v1
 - A complete server optimizer web app with GUI
 
-## About Utilityware -v1    
+## About Utilitiware -v1    
 This project was built using 100% Node.js built-in modules without importing any form of helpers from NPM.
 
 ## Clone this repo
