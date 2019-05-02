@@ -22,9 +22,8 @@ handlers.index = function(data, callback) {
   if(data.method == 'get') {
     // Prepare data for interpolation
     const templateData = {
-      'head.title' : 'This is the title',
-      'head.description' : 'This is the meta description',
-      'body.title' : 'Hello templated world!',
+      'head.title' : 'Uptime Monitoring - Made Simple',
+      'head.description' : 'We offer free, simple uptime monitoring for HTTP/HTTPS sites all kinds. When your site goes down, we\'ll send you a text to let you know',
       'body.class' : 'index'
     };
     // Read in a template as a string
@@ -45,6 +44,251 @@ handlers.index = function(data, callback) {
     });
   } else {
     callback(405, undefined, 'html');
+  }
+};
+
+// Create Account
+handlers.accountCreate = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Create an Account',
+      'head.description' : 'Signup is easy and only takes a few seconds.',
+      'body.class' : 'accountCreate'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('accountCreate',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Create Sessions
+handlers.sessionCreate = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Login to your Account',
+      'head.description' : 'Please enter your phone number and password to access your account.',
+      'body.class' : 'sessionCreate'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('sessionCreate',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+
+// Delete Sessions
+handlers.sessionDeleted = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Logged Out',
+      'head.description' : 'You have been logged out',
+      'body.class' : 'sessionDeleted'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('sessionDeleted',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Edit Account
+handlers.accountEdit = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Account Settings',
+      'body.class' : 'accountEdit'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('accountEdit',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Delete Account
+handlers.accountDeleted = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Account Deleted',
+      'head.description' : 'You Account has been deleted',
+      'body.class' : 'accountDeleted'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('accountDeleted',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Create a new check
+handlers.checksCreate = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Create a new check',
+      'body.class' : 'checksCreate'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('checksCreate',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Checks view all
+handlers.checksList = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Dashboard',
+      'body.class' : 'checksList'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('checksList',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
+  }
+};
+
+// Edit a check
+handlers.checksEdit = function(data,callback){
+  // Reject any request that isn't a GET
+  if(data.method == 'get'){
+    // Prepare data for interpolation
+    const templateData = {
+      'head.title' : 'Check Details',
+      'body.class' : 'checksEdit'
+    };
+    // Read in a template as a string
+    helpers.getTemplate('checksEdit',templateData,function(err,str){
+      if(!err && str){
+        // Add the universal header and footer
+        helpers.addUniversalTemplates(str,templateData,function(err,str){
+          if(!err && str){
+            // Return that page as HTML
+            callback(200,str,'html');
+          } else {
+            callback(500,undefined,'html');
+          }
+        });
+      } else {
+        callback(500,undefined,'html');
+      }
+    });
+  } else {
+    callback(405,undefined,'html');
   }
 };
 
