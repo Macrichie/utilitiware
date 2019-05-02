@@ -1,1 +1,0 @@
-You can access local variables in templates rendered within the application.  This is so cool This is so cool
