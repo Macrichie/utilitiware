@@ -66,7 +66,7 @@ cli.responders.help = function(){
 
 // Exit
 cli.responders.exit = function(){
-  console.log("You asked to exit");
+  process.exit;
 };
 
 // Stats
