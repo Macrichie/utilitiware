@@ -14,6 +14,7 @@ class _events extends events{};
 const e = new _events();
 const os = require('os');
 const v8 = require('v8');
+const helpers = require('./helpers');
  
 // Instantiate the cli module object
 const cli = {};
@@ -76,7 +77,7 @@ cli.responders.help = function(){
     'More user info --{userId}' : 'Show details of a specified user',
     'List checks --up --down' : 'Show a list of all the active checks in the system, including their state. The "--up" and "--down flags are both optional."',
     'More check info --{checkId}' : 'Show details of a specified check',
-    'List logs' : 'Show a list of all the log files available to be read (compressed and uncompressed)',
+    'List logs' : 'Show a list of all the log files available to be read (compressed only)',
     'More log info --{logFileName}' : 'Show details of a specified log file',
   };
 
@@ -302,8 +303,28 @@ cli.responders.listLogs = function(){
 
 // More logs info
 cli.responders.moreLogInfo = function(str){
-  console.log("You asked for more log info",str);
-};
+    // Get logFileName from string
+    const arr = str.split('--');
+    const logFileName = typeof(arr[1]) == 'string' && arr[1].trim().length > 0 ? arr[1].trim() : false;
+    if(logFileName){
+      cli.verticalSpace();
+      // Decompress it
+      _logs.decompress(logFileName,function(err,strData){
+        if(!err && strData){
+          // Split it into lines
+          const arr = strData.split('\n');
+          arr.forEach(function(jsonString){
+            const logObject = helpers.parseJsonToObject(jsonString);
+            if(logObject && JSON.stringify(logObject) !== '{}'){
+              console.dir(logObject,{'colors' : true});
+              cli.verticalSpace();
+            }
+          });
+        }
+      });
+    }
+  };
+  
  
 // Input processor
 cli.processInput = function(str){
