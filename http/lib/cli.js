@@ -9,6 +9,7 @@ const util = require('util');
 const debug = util.debuglog('cli');
 const events = require('events');
 const _data = require('./data');
+const _logs = require('./logs');
 class _events extends events{};
 const e = new _events();
 const os = require('os');
@@ -286,8 +287,18 @@ cli.responders.moreCheckInfo = function(str){
 
 // List Logs
 cli.responders.listLogs = function(){
-  console.log("You asked to list logs");
-};
+    _logs.list(true,function(err,logFileNames){
+      if(!err && logFileNames && logFileNames.length > 0){
+        cli.verticalSpace();
+        logFileNames.forEach(function(logFileName){
+          if(logFileName.indexOf('-') > -1){
+            console.log(logFileName);
+            cli.verticalSpace();
+          }
+        });
+      }
+    });
+  };
 
 // More logs info
 cli.responders.moreLogInfo = function(str){
