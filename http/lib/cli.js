@@ -8,13 +8,14 @@ const readline = require('readline');
 const util = require('util');
 const debug = util.debuglog('cli');
 const events = require('events');
+const _data = require('./data');
 class _events extends events{};
 const e = new _events();
 const os = require('os');
 const v8 = require('v8');
  
- // Instantiate the cli module object
- const cli = {};
+// Instantiate the cli module object
+const cli = {};
 
 // Input handlers
 e.on('man',function(str){
@@ -150,7 +151,7 @@ cli.centered = function(str){
 
 // Exit
 cli.responders.exit = function(){
-  process.exit;
+  process.exit(0);
 };
 
 // Stats
@@ -196,8 +197,23 @@ cli.responders.stats = function(){
 
 // List Users
 cli.responders.listUsers = function(){
-  console.log("You asked to list users");
-};
+    _data.list('users',function(err,userIds){
+      if(!err && userIds && userIds.length > 0){
+        cli.verticalSpace();
+        userIds.forEach(function(userId){
+          _data.read('users',userId,function(err,userData){
+            if(!err && userData){
+              let line = 'Name: '+userData.firstName+' '+userData.lastName+' Phone: '+userData.phone+' Checks: ';
+              const numberOfChecks = typeof(userData.checks) == 'object' && userData.checks instanceof Array && userData.checks.length > 0 ? userData.checks.length : 0;
+              line+=numberOfChecks;
+              console.log(line);
+              cli.verticalSpace();
+            }
+          });
+        });
+      }
+    });
+  };
 
 // More user info
 cli.responders.moreUserInfo = function(str){
