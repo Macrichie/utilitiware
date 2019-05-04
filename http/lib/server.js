@@ -34,6 +34,7 @@ server.httpsServer = https.createServer(server.httpsServerOptions, (req, res) =>
     server.unifiedServer(req, res);
 });
 
+// All the server logic for both http and https server
 server.unifiedServer = (req, res) => {
     //Get the url and parse it
     const parseUrl = url.parse(req.url, true);
@@ -41,12 +42,16 @@ server.unifiedServer = (req, res) => {
     const pathName = parseUrl.pathname;
     const trimmedPath = pathName.replace(/^\/+|\/+$/g, '');
 
+    // Get the query string as an object
     const queryString = parseUrl.query;
-    //Get HTTP request
+    
+    //Get  the HTTP method
     const method = req.method.toLocaleLowerCase();
-
+    
+    // Get the header as an object
     const headers = req.headers;
-
+    
+    // Get the payload, if any
     const decoder = new StringDecoder('utf-8');
     let buffer = '';
 
@@ -70,7 +75,19 @@ server.unifiedServer = (req, res) => {
             'payload' : helpers.parseJsonToObject(buffer)
           };
         // Route the request to the handler specified in the router
-        routeToHandler(data, function(statusCode, payload, contentType) {
+        try{
+            routeToHandler(data, function(statusCode, payload, contentType) {
+                server.processHandlerResponse(res, method, trimmedPath, statusCode, payload, contentType);
+            });
+        } catch(e) {
+            debug(e);
+            server.processHandlerResponse(res, method, trimmedPath, 500, {'Error': 'An unknown error has occured'}, 'json')
+        }
+    });
+};
+
+// Process the response from the handler
+server.processHandlerResponse = function(res, method, trimmedPath, statusCode, payload, contentType) {
             // Determine the type of response (fallback to json)
             contentType = typeof(contentType) == 'string' ? contentType : 'json';
             // Use the status code called back by the handler, or default to 200
@@ -125,10 +142,7 @@ server.unifiedServer = (req, res) => {
             } else {
                 debug('\x1b[31m%s\x1b[0m', method.toUpperCase()+' /'+trimmedPath+' '+statusCode);
             }
-            
-        });
-    });
-}
+};
 
 // Define the request router
 server.router = {
@@ -146,7 +160,8 @@ server.router = {
     'api/tokens': handlers.tokens,
     'api/checks': handlers.checks,
     'favicon.ico': handlers.favicon,
-    'public': handlers.public
+    'public': handlers.public,
+    'examples/error': handlers.exampleError 
   };
 
 // Init script
