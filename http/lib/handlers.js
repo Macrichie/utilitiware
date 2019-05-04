@@ -9,7 +9,7 @@ const helpers = require('./helpers');
 const config = require('./config');
 
 // Define all the handlers
-var handlers = {};
+const handlers = {};
 
 /*
  * HTML Handlers
@@ -364,13 +364,18 @@ handlers.notFound = function(data,callback){
 
 // Users
 handlers.users = function(data,callback){
-  var acceptableMethods = ['post','get','put','delete'];
+  const acceptableMethods = ['post','get','put','delete'];
   if(acceptableMethods.indexOf(data.method) > -1){
     handlers._users[data.method](data,callback);
   } else {
     callback(405);
   }
 };
+
+handlers.exampleError = function(data, callback) {
+ const error = new error('This is an example error');
+ throw(err);
+}
 
 // Container for all the users methods
 handlers._users  = {};
@@ -380,22 +385,22 @@ handlers._users  = {};
 // Optional data: none
 handlers._users.post = function(data,callback){
   // Check that all required fields are filled out
-  var firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
-  var lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
-  var phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
-  var password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
-  var tosAgreement = typeof(data.payload.tosAgreement) == 'boolean' && data.payload.tosAgreement == true ? true : false;
+  const firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
+  const lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
+  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+  const password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
+  const tosAgreement = typeof(data.payload.tosAgreement) == 'boolean' && data.payload.tosAgreement == true ? true : false;
 
   if(firstName && lastName && phone && password && tosAgreement){
     // Make sure the user doesnt already exist
     _data.read('users',phone,function(err,data){
       if(err){
         // Hash the password
-        var hashedPassword = helpers.hash(password);
+        const hashedPassword = helpers.hash(password);
 
         // Create the user object
         if(hashedPassword){
-          var userObject = {
+          const userObject = {
             'firstName' : firstName,
             'lastName' : lastName,
             'phone' : phone,
@@ -549,7 +554,7 @@ handlers._users.delete = function(data, callback) {
                     } else {
                         callback(500, {'Error': 'Could not delete the specified user'});
                     }
-                })
+                });
             } else {
                 callback(400, {'Error': 'Could not find the specified user'});
             }
@@ -565,7 +570,7 @@ handlers._users.delete = function(data, callback) {
 
 // Token
 handlers.tokens = function(data,callback){
-  var acceptableMethods = ['post','get','put','delete'];
+  const acceptableMethods = ['post','get','put','delete'];
   if(acceptableMethods.indexOf(data.method) > -1){
     handlers._tokens[data.method](data,callback);
   } else {
@@ -579,8 +584,8 @@ handlers._tokens = {};
 // Required data: phone, password
 // Optional data: none
 handlers._tokens.post = function(data,callback) {
-  var phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
-  var password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
+  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+  const password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
 
   if(phone && password) {
       // lookup the user
@@ -603,14 +608,14 @@ handlers._tokens.post = function(data,callback) {
                   } else {
                       callback(500, {'Error': 'Could not create new token'});
                   }
-              })
+              });
              } else {
                  callback(400, {'Error': 'Password did not match the specified user\'s stored user'});
              }
           } else {
               callback(400, {'Error': 'Could not find the specified user'});
           }
-      })
+      });
   } else {
       callback(400, {'Error': 'Missing required field(s)'});
   }
@@ -647,18 +652,18 @@ handlers._tokens.put = function(data,callback) {
             if(!err) {
               callback(200);
             } else {
-              callback(500, {'Error': 'Could not update token\'s expiration.'})
+              callback(500, {'Error': 'Could not update token\'s expiration.'});
             }
-          })
+          });
         } else {
-          callback(400, {'Error': 'The token has already expired and cannot be extended.'})
+          callback(400, {'Error': 'The token has already expired and cannot be extended.'});
         }
       } else {
-        callback(400, {'Error': 'Specified token does not exist'})
+        callback(400, {'Error': 'Specified token does not exist'});
       }
-    })
+    });
   } else {
-    callback(400, {'Error': 'Missing Required field(s) or field(s).'})
+    callback(400, {'Error': 'Missing Required field(s) or field(s).'});
   }
 };
 
@@ -677,7 +682,7 @@ handlers._tokens.delete = function(data,callback) {
           } else {
               callback(400, {'Error': 'Could not find the specified token'});
           }
-      })
+      });
   } else {
       callback(400, {'Error': 'Missing Required Field'});
   } 
@@ -701,7 +706,7 @@ handlers._tokens.verifyToken = function(id, phone, callback) {
 
 // Checks
 handlers.checks = function(data,callback){
-  var acceptableMethods = ['post','get','put','delete'];
+  const acceptableMethods = ['post','get','put','delete'];
   if(acceptableMethods.indexOf(data.method) > -1){
     handlers._checks[data.method](data,callback);
   } else {

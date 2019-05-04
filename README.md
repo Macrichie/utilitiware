@@ -19,6 +19,7 @@ Runs the app in the development mode.
 
 Open http://localhost:3000 to view it in the browser.
 
+
 ## Make sure server is running by running node index.js and run the below
 ## CLI commands:
 - exit : Kill the CLI (and the rest of the application)
