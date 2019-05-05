@@ -1,3 +1,8 @@
+/*
+* These are helpers for various tasks
+* 
+*/
+
 //Dependencies
 const config = require('./config');
 const crypto = require('crypto');
@@ -6,8 +11,15 @@ const queryString = require('querystring');
 const path = require('path');
 const fs = require('fs');
 
+// Container for all the helpers
 const helpers = {};
 
+// Sample for testing that simply returns a number
+helpers.getANumber = function(){
+  return 1;
+};
+
+// Parse a JSON string to an object in all cases, without throwing
 helpers.parseJsonToObject = function(str) {
     try{
         const obj = JSON.parse(str);
