@@ -7,6 +7,8 @@
 const _data = require('./data');
 const helpers = require('./helpers');
 const config = require('./config');
+const dns = require('dns');
+const _url = require('url');
 
 // Define all the handlers
 const handlers = {};
@@ -742,37 +744,46 @@ handlers._checks.post = function(data, callback) {
             const userChecks = typeof(userData.checks) == 'object' && userData.checks instanceof Array ? userData.checks : [];
             //verify that user has less than the number the max-checks-per-user
             if(userChecks.length < config.maxChecks) {
-              // create random id for the check
-              const checkId = helpers.createRandomString(20);
-              // create the check object, and include the user's phone
-              const checkObject = {
-                'id': checkId,
-                'userPhone':userPhone,
-                'protocol':protocol,
-                'url':url,
-                'method':method,
-                'successCodes':successCodes,
-                'timeoutSeconds':timeoutSeconds
-              };
-              //Save the object
-              _data.create('checks', checkId, checkObject, function(err) {
-                if(!err) {
-                  //add the check id to the user's object
-                  userData.checks = userChecks;
-                  userData.checks.push(checkId);
-
-                  // Save the new user data
-                  _data.update('users', userPhone, userData, function(err) {
+              // Verify that the url given has DNS entries (and therefore can be resolved).
+              const parsedUrl = _url.parse(protocol+'://'+url, true);
+              const hostName = typeof(parsedUrl.hostname) == 'string' && parsedUrl.hostname.length > 0 ? parsedUrl.hostname : false; 
+              dns.resolve(hostName, function(err, records) {
+                if(!err && records) {
+                  // create random id for the check
+                  const checkId = helpers.createRandomString(20);
+                  // create the check object, and include the user's phone
+                  const checkObject = {
+                    'id': checkId,
+                    'userPhone':userPhone,
+                    'protocol':protocol,
+                    'url':url,
+                    'method':method,
+                    'successCodes':successCodes,
+                    'timeoutSeconds':timeoutSeconds
+                  };
+                  //Save the object
+                  _data.create('checks', checkId, checkObject, function(err) {
                     if(!err) {
-                      callback(200, checkObject);
+                      //add the check id to the user's object
+                      userData.checks = userChecks;
+                      userData.checks.push(checkId);
+
+                      // Save the new user data
+                      _data.update('users', userPhone, userData, function(err) {
+                        if(!err) {
+                          callback(200, checkObject);
+                        } else {
+                          callback(500, {'Error': 'Could not update the user with the new check'})
+                        }
+                      });
                     } else {
-                      callback(500, {'Error': 'Could not update the user with the new check'})
+                      callback(500, {'Error': 'Could not create new check'})
                     }
-                  })
+                  });
                 } else {
-                  callback(500, {'Error': 'Could not create new check'})
+                  callback(400, {'Error': 'The hostname of the URL entered did not resolve to any DNS entries.'});
                 }
-              })
+              });
 
             } else {
               callback(400, {'Error': `The user already has the maximum number of checks ${config.maxChecks}`})
@@ -780,11 +791,11 @@ handlers._checks.post = function(data, callback) {
           } else{
             callback(403);
         }
-      })
+      });
       } else {
         callback(403, {'Error': 'Something went wrong here'});
       }
-    })
+    });
   } else {
     callback(400, {'Error': 'Missing required inputs, or inputs are invalid'})
   }
