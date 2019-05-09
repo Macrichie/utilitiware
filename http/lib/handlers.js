@@ -9,6 +9,10 @@ const helpers = require('./helpers');
 const config = require('./config');
 const dns = require('dns');
 const _url = require('url');
+const { performance, PerformanceObserver } = require('perf_hooks');
+const util = require('util');
+const debug = util.debuglog('performance');
+
 
 // Define all the handlers
 const handlers = {};
@@ -586,15 +590,23 @@ handlers._tokens = {};
 // Required data: phone, password
 // Optional data: none
 handlers._tokens.post = function(data,callback) {
+  performance.mark('enter function');
   const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
   const password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
-
+  performance.mark('inputs validated');
   if(phone && password) {
-      // lookup the user
+      // lookup the user who matches that phone number
+      performance.mark('beginning user lookup');
       _data.read('users', phone, function(err, userData) {
+          performance.mark('user lookup complete');
           if(!err && userData) {
+            // Hash the sent password, and compare it to the password stored in the user Object
+            performance.mark('beginning password hashing');
              const hashedPassword = helpers.hash(password);
+             performance.mark('password hashing complete');
              if(hashedPassword === userData.hashedPassword) {
+              // If valid, create a new token with a random name. Set expiration date 1 hour into the future
+              performance.mark('creating data for the token');
               const tokenId = helpers.createRandomString(20);
               const expires = Date.now() + 1000 * 60 * 60;
 
@@ -603,8 +615,30 @@ handlers._tokens.post = function(data,callback) {
                   'id': tokenId,
                   'expires': expires
               };
-
+              
+              // Store the token
+              performance.mark('begin storing token');
               _data.create('tokens', tokenId, tokenObject, function(err) {
+                  performance.mark('storing token complete');
+
+                  // Gather all the measurements
+                  performance.measure('Beginning to end', 'entered function', 'storing token complete');
+                  performance.measure('Validating user input', 'entered function', 'inputs validated');
+                  performance.measure('User lookup', 'beginning user lookup', 'user lookup complete');
+                  performance.measure('Password hashing', 'beginning password hashing', 'password hashing complete');
+                  performance.measure('Token data creation', 'creating data for the token', 'begin storing token');
+                  performance.measure('Token storing', 'begin storing token', 'storing token complete');
+
+                  // Log out all the measurements
+                  //@TODO this need to be fixed
+                  const measurements = new PerformanceObserver(function(items) {
+                    
+                    debug('\x1b[33m%s\x1b[0m', items.getEntries()[0].name+' '+items.getEntries()[0].duration);
+                    //measurements.disconnect();
+                    performance.clearMarks();
+                  });
+                  measurements.observe({ entryTypes: ['measure'] });
+
                   if(!err) {
                       callback(200, tokenObject);
                   } else {
